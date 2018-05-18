@@ -27,6 +27,7 @@ namespace el_async{
 		const std::string& get_bind_elem_ip();
 		uint16_t get_bind_elem_port();
 		const char* get_bind_elem_name();
+		const std::string& get_bind_elem_data();
 	protected:
 	private:
 		service_t(){}

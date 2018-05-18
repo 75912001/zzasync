@@ -20,10 +20,10 @@ void el_async::service_t::run( bind_config_elem_t* bind_elem, int n_inited_bc )
 {
 	g_is_parent = false;
 
-	//释放资源(从父进程继承来的资源)
+	//释放资源(从父进程继承来的资源)		
 	SAFE_DELETE(g_timer);
 	g_timer = new el::lib_timer_t;
-	//这里释放父进程的日志
+	//这里释放父进程的日志		
 	g_log->clear_log_buf_list();
 	SAFE_DELETE(g_log);
 	g_log = new el::lib_log_t;
@@ -144,4 +144,9 @@ const std::string& el_async::service_t::get_bind_elem_ip()
 uint16_t el_async::service_t::get_bind_elem_port()
 {
 	return this->bind_elem->port;
+}
+
+const std::string& el_async::service_t::get_bind_elem_data()
+{
+	return this->bind_elem->data;
 }
