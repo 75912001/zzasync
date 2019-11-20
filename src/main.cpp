@@ -13,9 +13,123 @@
 #include "net_tcp.h"
 #include "util.h"
 #include "versions.h"
+#include <iostream>
+#include <string>
+#include <map>
+using namespace std;
+
+#define DECLARE_CLASS() \
+	protected: \
+	static ClassInfo ms_classinfo; \
+	public:  \
+	static Object* CreateObject();  
+
+#define IMPLEMENT_CLASS(interface_name, class_name)            \
+	ClassInfo class_name::ms_classinfo(interface_name,(ObjectConstructorFn)class_name::CreateObject);\
+	Object* class_name::CreateObject() \
+{ return new class_name;} 
+
+class ClassInfo;
+class Object;
+typedef Object* (*ObjectConstructorFn)();
+
+class Object  
+{ 
+protected:
+	Object(){}
+public:  
+	virtual ~Object(){}
+	static void Register(ClassInfo* ci);         
+	static Object* CreateObject(std::string name);     
+	static std::map<std::string, ClassInfo *> *classInfoMap;
+};  
+
+class ClassInfo  
+{  
+public:  
+	ClassInfo(const std::string className, ObjectConstructorFn ctor);
+	ClassInfo();
+	Object *CreateObject()const;
+
+public:  
+	std::string m_className;
+	ObjectConstructorFn m_objectConstructor;
+}; 
+
+std::map<std::string, ClassInfo *> *Object::classInfoMap = new std::map<std::string, ClassInfo*>();
+
+void Object::Register(ClassInfo* ci)  
+{   
+	if (NULL != ci && classInfoMap->find(ci->m_className) == classInfoMap->end())
+	{  
+		classInfoMap->insert(std::map<std::string, ClassInfo*>::value_type(ci->m_className, ci)); 
+	}  
+}
+
+Object* Object::CreateObject(std::string name)  
+{
+	std::map<std::string, ClassInfo*>::const_iterator iter = classInfoMap->find(name);  
+	if (iter != classInfoMap->end())
+	{
+		return iter->second->CreateObject();
+	}
+	return NULL;  
+}  
+
+ClassInfo::ClassInfo(const std::string className, ObjectConstructorFn ctor):m_className(className), m_objectConstructor(ctor)  
+{  
+	Object::Register(this);
+}
+
+ClassInfo::ClassInfo()
+{
+}
+
+Object *ClassInfo::CreateObject()const 
+{ 
+	return m_objectConstructor ? (*m_objectConstructor)() : 0; 
+}
+
+class Test:public Object
+{
+	DECLARE_CLASS()
+public:
+	Test(){cout << "Test constructor" << endl;}
+	~Test(){cout << "Test destructor" << endl;}
+};
+
+IMPLEMENT_CLASS("xxxx", Test)
+
+#include <deque>
 
 int main(int argc, char* argv[])
 {
+	std::deque<int> c3 (5,6);
+	for (int &i : c3) {
+		cout<< i << ",";
+		i = 1;
+	}
+	for (int &i : c3) {
+		cout<< i << ",";
+
+	}
+	std::vector<int> v1;
+	for (auto i:v1){
+	}
+	Object* obj = Object::CreateObject("xxxx");
+	delete obj;
+ 
+// 	str* st = NULL;
+// 
+// 	struct foo f={0};
+// 	if (f.a->s) {
+// 		printf( f.a->s);
+// 	}
+// 	
+// 	
+
+// 	a_t a;
+// 	f(&a);
 	int ret = SUCC;
 	g_timer = new el::lib_timer_t;
 	g_log = new el::lib_log_t;
